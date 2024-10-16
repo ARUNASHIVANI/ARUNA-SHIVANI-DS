@@ -1,0 +1,146 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_STUDENTS 100
+#define MAX_SEATS 100
+
+// Define structures
+struct Student {
+    int id;
+    char name[50];
+    int seatNumber;
+    int paperNumber;
+};
+
+struct Seat {
+    int number;
+    int occupied;
+    int studentID;
+};
+// Function prototypes
+void insertStudent(struct Student students[], int *numStudents, struct Seat seats[], int *numSeats);
+void deleteStudent(struct Student students[], int *numStudents, struct Seat seats[], int *numSeats);
+void distributePapers(struct Student students[], int numStudents);
+void displaySeatingArrangement(struct Student students[], int numStudents, struct Seat seats[], int numSeats);
+
+int main() {
+    // Initialize arrays of students and seats
+    struct Student students[MAX_STUDENTS];
+    struct Seat seats[MAX_SEATS];
+
+    int numStudents = 0;
+    int numSeats = 0;
+
+    // Menu loop
+    int choice;
+    do {
+        printf("\n1. Insert Student\n2. Delete Student\n3. Distribute Papers\n4. Display Seating Arrangement\n5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch(choice) {
+            case 1:
+                insertStudent(students, &numStudents, seats, &numSeats);
+                break;
+            case 2:
+                deleteStudent(students, &numStudents, seats, &numSeats);
+                break;
+            case 3:
+                distributePapers(students, numStudents);
+                break;
+            case 4:
+                displaySeatingArrangement(students, numStudents, seats, numSeats);
+                break;
+            case 5:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    } while(choice != 5);
+
+    return 0;
+}
+
+void insertStudent(struct Student students[], int *numStudents, struct Seat seats[], int *numSeats) {
+    // Inserting a student into an available seat
+    if (*numStudents >= MAX_STUDENTS || *numSeats >= MAX_SEATS) {
+        printf("No more space for students or seats!\n");
+        return;
+    }
+
+    printf("Enter student ID: ");
+    scanf("%d", &students[*numStudents].id);
+    printf("Enter student name: ");
+    scanf("%s", students[*numStudents].name);
+
+    int seatIndex;
+    printf("Enter seat number: ");
+    scanf("%d", &seatIndex);
+
+    if (seatIndex <= 0 || seatIndex > MAX_SEATS) {
+        printf("Invalid seat number!\n");
+        return;
+    }
+
+    if (seats[seatIndex - 1].occupied) {
+        printf("Seat is already occupied!\n");
+        return;
+    }
+
+    students[*numStudents].seatNumber = seatIndex;
+    seats[seatIndex - 1].occupied = 1;
+    seats[seatIndex - 1].studentID = students[*numStudents].id;
+
+    (*numStudents)++;
+    (*numSeats)++;
+}
+void deleteStudent(struct Student students[], int *numStudents, struct Seat seats[], int *numSeats) {
+    // Deleting a student from a seat
+    int studentID;
+    printf("Enter student ID to delete: ");
+    scanf("%d", &studentID);
+
+    for (int i = 0; i < *numStudents; i++) {
+        if (students[i].id == studentID) {
+            int seatIndex = students[i].seatNumber;
+            seats[seatIndex - 1].occupied = 0;
+            seats[seatIndex - 1].studentID = 0;
+            printf("Student %s with ID %d has been deleted from seat %d.\n", students[i].name, students[i].id, seatIndex);
+
+            // Remove student from array by shifting elements
+            for (int j = i; j < *numStudents - 1; j++) {
+                students[j] = students[j + 1];
+            }
+
+            (*numStudents)--;
+            (*numSeats)--;
+            return;
+        }
+    }
+    printf("Student not found!\n");
+}
+
+void distributePapers(struct Student students[], int numStudents) {
+    // Distributing papers to students
+    for (int i = 0; i < numStudents; i++) {
+        printf("Enter paper number for student %s with ID %d: ", students[i].name, students[i].id);
+        scanf("%d", &students[i].paperNumber);
+    }
+}
+
+void displaySeatingArrangement(struct Student students[], int numStudents, struct Seat seats[], int numSeats) {
+    // Displaying the seating arrangement
+    printf("\nSeat Number\tStudent ID\tStudent Name\tPaper Number\n");
+    for (int i = 0; i < numSeats; i++) {
+        if (seats[i].occupied) {
+            printf("%d\t\t%d\t\t%s\t\t%d\n", seats[i].number, seats[i].studentID, students[i].name, students[i].paperNumber);
+        } else {
+            printf("%d\t\tEmpty\n", seats[i].number);
+        }
+    }
+}
+
+
+
